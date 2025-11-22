@@ -1,0 +1,163 @@
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>Ultimate Chemistry Calculator</title>  
+<style>  
+body { font-family: Arial; background:#0b1d4c; color:white; margin:0; padding:0; }  
+.calculator { max-width:1400px; margin:10px auto; padding:10px; }  
+.display { width:100%; height:70px; background:#1a2a6c; border:2px solid #fff; border-radius:8px; font-size:20px; padding:20px; margin-bottom:10px; overflow-x:auto; white-space:pre-wrap; }  
+.button-grid { display:grid; grid-template-columns:repeat(10,1fr); gap:6px; margin-bottom:20px; }  
+button { padding:14px; font-size:14px; border-radius:6px; border:none; background:#203a80; color:white; cursor:pointer; }  
+button:hover { background:#4060b0; }  
+.section-title { font-weight:bold; font-size:16px; margin-top:15px; margin-bottom:5px; color:#ffcc00; }  
+.subscript { vertical-align: sub; font-size: 0.7em; }  
+.arrow { font-size: 18px; }  
+</style>  
+</head>  
+<body>  <div class="calculator">  
+  <div class="display" id="display">0</div>    <!-- Periods -->    <div class="section-title">Elements by Period</div>  
+  <div class="button-grid" id="period-buttons"></div>  
+  <div class="button-grid" id="period-element-buttons"></div> <!-- dynamic element buttons -->    <!-- Ionic Groups -->    <div class="section-title">Ions by Group</div>  
+  <div class="button-grid" id="group-buttons"></div>  
+  <div class="button-grid" id="group-ion-buttons"></div> <!-- dynamic ion buttons -->    <!-- Alphanumeric & Symbols -->    <div class="section-title">Alphanumeric & Symbols</div>  
+  <div class="button-grid" id="alpha-buttons"></div>    <!-- Functions & Conversions -->    <div class="section-title">Functions & Conversions</div>  
+  <div class="button-grid">  
+    <button onclick="insertANS()">ANS</button>  
+    <button onclick="clearDisplay()">Clear All</button>  
+    <button onclick="deleteChar()">DEL</button>  
+    <button onclick="insertValue('log(')">log</button>  
+    <button onclick="insertValue('ln(')">ln</button>  
+    <button onclick="insertValue('sin(')">sin</button>  
+    <button onclick="insertValue('cos(')">cos</button>  
+    <button onclick="insertValue('tan(')">tan</button>  
+    <button onclick="insertValue('π')">π</button>  
+    <button onclick="insertValue('exp(')">exp</button>  
+    <button onclick="shiftFunction()">SHIFT</button>  
+    <button onclick="convertUnits()">CONV</button>  
+    <button onclick="constants()">CONST</button>  
+    <button onclick="insertValue('(')">(</button>  
+    <button onclick="insertValue(')')">)</button>  
+    <button onclick="insertValue('.')">.</button>  
+    <button onclick="calculate()">=</button>  
+  </div>    <!-- Advanced Chemistry & Math Modes -->    <div class="section-title">Advanced Modes</div>  
+  <div class="button-grid">  
+    <button onclick="setMode('nuclear')">Nuclear</button>  
+    <button onclick="setMode('electrochem')">Electrochemistry</button>  
+    <button onclick="setMode('thermo')">Thermochemistry</button>  
+    <button onclick="setMode('kinetics')">Kinetics</button>  
+    <button onclick="setMode('organic')">Organic Chem</button>  
+    <button onclick="setMode('biochem')">Biochemistry</button>  
+    <button onclick="setMode('equilibrium')">Equilibrium</button>  
+    <button onclick="setMode('ionic')">Ionic</button>  
+    <button onclick="setMode('matrices')">Matrices</button>  
+    <button onclick="setMode('vectors')">Vectors</button>  
+    <button onclick="setMode('diffint')">Diff/Int</button>  
+    <button onclick="setMode('unknowns')">Unknowns</button>  
+    <button onclick="insertArrow('→')">→</button>  
+    <button onclick="insertArrow('↔')">↔</button>  
+    <button onclick="balanceEquation()">Balance Eq</button>  
+  </div>  
+</div>  <script>  
+// --- Display & ANS ---  
+let display = document.getElementById('display');  
+let lastAnswer = '0';  
+let shiftOn = false;  
+  
+// --- Periodic Elements & Ions ---  
+const periods = {  
+  P1:['H','He'],   
+  P2:['Li','Be','B','C','N','O','F','Ne'],   
+  P3:['Na','Mg','Al','Si','P','S','Cl','Ar'],  
+  P4:['K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr'],  
+  P5:['Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe'],  
+  P6:['Cs','Ba','La','Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn'],  
+  P7:['Fr','Ra','Ac','Rf','Db','Sg','Bh','Hs','Mt','Ds','Rg','Cn','Fl','Lv']  
+};  
+const ions = {  
+  G1:['H+','Li+','Na+','K+','Rb+','Cs+','Fr+'],   
+  G2:['Be2+','Mg2+','Ca2+','Sr2+','Ba2+','Ra2+'],   
+  G3:['Al3+'], G4:['C4+'], G5:['N3-'],   
+  G6:['O2-','S2-'], G7:['F-','Cl-','Br-','I-'],   
+  G8:['He','Ne','Ar','Kr','Xe','Rn']  
+};  
+  
+// --- Generate Period & Group Buttons ---  
+const periodButtons = document.getElementById('period-buttons');  
+const periodElementButtons = document.getElementById('period-element-buttons');  
+Object.keys(periods).forEach(p => {  
+  let btn = document.createElement('button');  
+  btn.innerText = p;  
+  btn.onclick = () => {  
+    periodElementButtons.innerHTML = '';  
+    periods[p].forEach(el => {  
+      let eBtn = document.createElement('button');  
+      eBtn.innerText = el;  
+      eBtn.onclick = () => insertValue(el);  
+      periodElementButtons.appendChild(eBtn);  
+    });  
+  };  
+  periodButtons.appendChild(btn);  
+});  
+  
+const groupButtons = document.getElementById('group-buttons');  
+const groupIonButtons = document.getElementById('group-ion-buttons');  
+Object.keys(ions).forEach(g => {  
+  let btn = document.createElement('button');  
+  btn.innerText = g;  
+  btn.onclick = () => {  
+    groupIonButtons.innerHTML = '';  
+    ions[g].forEach(ion => {  
+      let iBtn = document.createElement('button');  
+      iBtn.innerText = ion;  
+      iBtn.onclick = () => insertValue(ion);  
+      groupIonButtons.appendChild(iBtn);  
+    });  
+  };  
+  groupButtons.appendChild(btn);  
+});  
+  
+// --- Alphanumeric Buttons ---  
+const alphaButtons = document.getElementById('alpha-buttons');  
+const alphaChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ+-×÷().,:';  
+alphaChars.split('').forEach(c => {  
+  let btn = document.createElement('button');  
+  btn.innerText = c;  
+  btn.onclick = () => insertValue(c);  
+  alphaButtons.appendChild(btn);  
+});  
+  
+// --- Display Functions ---  
+function insertValue(v){   
+  if(display.innerText==='0') display.innerText='';   
+  // subscript numbers  
+  if(/[0-9]/.test(v)) v = `<sub class="subscript">${v}</sub>`;  
+  display.innerHTML += v;   
+}  
+function insertArrow(a){ display.innerHTML += ` <span class="arrow">${a}</span> `; }  
+function clearDisplay(){ display.innerHTML='0'; }  
+function deleteChar(){   
+  let content = display.innerHTML;  
+  content = content.replace(/<sub class="subscript">[0-9]<\/sub>$/,'');  
+  content = content.slice(0,-1) || '0';  
+  display.innerHTML = content;   
+}  
+function calculate(){   
+  try{   
+    let clean = display.innerHTML.replace(/<sub class="subscript">(\d)<\/sub>/g,'$1').replace(/×/g,'*').replace(/÷/g,'/');  
+    lastAnswer = eval(clean);   
+    display.innerText=lastAnswer;   
+  }catch(e){ display.innerText='Error'; }   
+}  
+function insertANS(){ insertValue(lastAnswer); }  
+function shiftFunction(){ shiftOn = !shiftOn; alert('Shift toggles inverse functions, unit conversions, letter case, configurations'); }  
+function setMode(m){ display.innerText=`Mode: ${m}`; }  
+function convertUnits(){ alert('Unit conversion placeholder'); }  
+function constants(){ alert('Constants table placeholder'); }  
+function balanceEquation(){  
+  let input = display.innerText;  
+  if(!input.includes('→')) input += ' → ?';  
+  display.innerHTML = `Balanced: ${input} (coefficients auto-calculated placeholder)`;  
+}  
+</script>  </body>  
+</html>
