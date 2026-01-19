@@ -9,8 +9,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "express": "^4.19.0",
-    "cors": "^2.8.5"
+    "@vercel/analytics": "^1.6.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.0"
   },
   "devDependencies": {
     "jest": "^29.7.0"
