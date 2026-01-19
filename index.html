@@ -1,43 +1,1006 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>TitusMukisa Chemistry Calculator</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" href="/assets/logo.svg" />
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemistry Scientific Calculator</title>
+
+<style>
+body{
+  background:#121212;
+  font-family:Consolas, monospace;
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:white;
+}
+.calculator{
+  width:520px;
+  background:#1e1e1e;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 5px 20px rgba(0,0,0,.5);
+}
+.screen{
+  background:black;
+  color:#0f0;
+  min-height:60px;
+  font-size:1.3em;
+  padding:10px;
+  border-radius:5px;
+  margin-bottom:10px;
+  overflow-x:auto;
+  outline:none;
+}
+.mode-buttons,.nav-container{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.button-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
+  margin-bottom:10px;
+}
+button{
+  background:#333;
+  color:white;
+  border:none;
+  border-radius:5px;
+  height:45px;
+  cursor:pointer;
+}
+button:hover{background:#555;}
+sub{font-size:.8em;}
+sup{font-size:.8em;}
+</style>
 </head>
+
 <body>
-  <header class="topbar">
-    <img src="/assets/logo.svg" alt="TM" class="logo">
-    <h1>TitusChem Calculator</h1>
-  </header>
+<div class="calculator">
 
-  <main class="container">
-    <section class="card">
-      <label for="reaction">Reaction</label>
-      <input id="reaction" placeholder="e.g. Fe + O2 -> Fe2O3" />
-      <div class="row">
-        <button id="calcBtn">Balance & Calculate</button>
-        <button id="clearBtn" class="muted">Reset</button>
-      </div>
-    </section>
+<div id="display" class="screen" contenteditable="true"></div>
+<div id="quantity-panel" style="display:none; margin-bottom:10px;">
+  <div>
+    Voltage (V): <input type="text" id="voltage" class="quantity-field" placeholder="?">
+  </div>
+  <div>
+    Current (A): <input type="text" id="current" class="quantity-field" placeholder="?">
+  </div>
+  <div>
+    Power (W): <input type="text" id="power" class="quantity-field" placeholder="?">
+  </div>
+  <div>
+    Energy (J): <input type="text" id="energy" class="quantity-field" placeholder="?">
+  </div>
+  <div>
+    Time (s): <input type="text" id="time" class="quantity-field" placeholder="?">
+  </div>
+  <button onclick="calculateQuantity()">Calculate</button>
+</div>
 
-    <section class="card results">
-      <h2>Result</h2>
-      <pre id="output">Nothing yet — try a reaction</pre>
-    </section>
+<div class="mode-buttons">
+  <button onclick="setMode('normal')">Normal</button>
+  <button onclick="setMode('sub')">Subscript</button>
+  <button onclick="setMode('super')">Superscript</button>
+  <button onclick="setMode('quantity')">Quantity</button>
+</div>
 
-    <section class="card small">
-      <h3>Quick Tools</h3>
-      <button id="molarBtn">Molar Mass</button>
-      <button id="stoicBtn">Stoichiometry</button>
-      <button id="thermoBtn">Thermochemistry</button>
-    </section>
-  </main>
+<div class="mode-buttons" id="period-buttons"></div>
+<div class="button-grid" id="period-element-buttons"></div>
 
-  <footer class="footer">© Mukisa Titus Mwanje — TitusMukisaMJToward</footer>
+<div class="mode-buttons" id="group-buttons"></div>
+<div class="button-grid" id="group-ion-buttons"></div>
 
-  <script type="module" src="app.js"></script>
+<div class="button-grid">
+    <!-- Numbers -->
+  <button onclick="inputNumber('1')">1</button>
+  <button onclick="inputNumber('2')">2</button>
+  <button onclick="inputNumber('3')">3</button>
+  <button onclick="inputNumber('4')">4</button>
+  <button onclick="inputNumber('5')">5</button>
+  <button onclick="inputNumber('6')">6</button>
+  <button onclick="inputNumber('7')">7</button>
+  <button onclick="inputNumber('8')">8</button>
+  <button onclick="inputNumber('9')">9</button>
+  <button onclick="inputNumber('0')">0</button>
+  <button onclick="inputSymbol('+')">+</button>
+  <button onclick="inputSymbol('-')">-</button>
+    <button onclick="inputSymbol('÷')">÷</button>
+  <button onclick="inputSymbol('^')">^</button>
+  <button onclick="inputSymbol('√')">√</button>
+  <button onclick="inputSymbol('×')">×</button>
+  <button onclick="inputSymbol('(')">(</button>
+  <button onclick="inputSymbol(')')">)</button>
+    <button onclick="inputSymbol('.')">.</button>
+  <button onclick="insertNthRoot()">ⁿ√</button>
+    <button onclick="inputSymbol('%')">%</button>
+  <button onclick="insertAns()">Ans</button>
+  <button onclick="evaluateMolarExpression()">=</button>
+  <button onclick="inputSymbol('→')">→</button>
+  <button onclick="inputSymbol('⇌')">⇌</button>
+<button onclick="balanceCurrentEquation()">Balance Eq</button>
+<button onclick="evaluateMolarExpression()">Molar Mass</button>
+<!-- Add these inside your existing button-grid -->
+<button onclick="evaluateMolarExpression()">Calculate</button>
+<button onclick="solveUnknown()">Solve = ?</button>
+<button onclick="showElectronConfig()">e⁻ Config</button>
+<button onclick="computeChargeButton()">ION CHARGE</button>
+  <button onclick="clearDisplay()">Clear All</button>
+  <button onclick="deleteChar()">DEL</button>
+</div>
+<div class="button-grid" id="prefix-pad"></div>
+<div class="nav-container">
+  <button onclick="moveCursor('up')">▲</button>
+  <button onclick="moveCursor('left')">◀</button>
+  <button onclick="moveCursor('down')">▼</button>
+  <button onclick="moveCursor('right')">▶</button>
+</div>
+
+</div>
+
+<script>
+/* ================= CORE INPUT ENGINE ================= */
+
+const display = document.getElementById("display");
+let mode = "normal";
+display.focus();
+
+function setMode(m){
+  mode = m;
+
+  // Show/hide quantity panel
+  document.getElementById("quantity-panel").style.display = (m === 'quantity') ? 'block' : 'none';
+}
+
+const quantityFields = ["voltage", "current", "power", "energy", "time"];
+let quantityIndex = 0;
+
+function focusQuantityField(index){
+  quantityIndex = index;
+  document.getElementById(quantityFields[index]).focus();
+}
+
+function nextQuantityField(){
+  focusQuantityField((quantityIndex + 1) % quantityFields.length);
+}
+
+function prevQuantityField(){
+  focusQuantityField((quantityIndex - 1 + quantityFields.length) % quantityFields.length);
+}
+
+function moveCursor(dir){
+  if(mode === 'quantity'){
+    if(dir === 'left' || dir === 'up') prevQuantityField();
+    if(dir === 'right' || dir === 'down') nextQuantityField();
+  } else {
+    const sel=window.getSelection();
+    if(!sel.rangeCount) return;
+    if(dir==="left") sel.modify("move","backward","character");
+    if(dir==="right") sel.modify("move","forward","character");
+    if(dir==="up") sel.modify("move","backward","line");
+    if(dir==="down") sel.modify("move","forward","line");
+    display.focus();
+  }
+}
+
+function insertAtCursor(text, tag=null){
+  const sel = window.getSelection();
+  if(!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+
+  let node;
+  if(tag){
+    node=document.createElement(tag);
+    node.textContent=text;
+  } else {
+    node=document.createTextNode(text);
+  }
+
+  range.insertNode(node);
+  range.setStartAfter(node);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  display.focus();
+}
+
+function inputElement(el){
+  if(mode==="sub") insertAtCursor(el,"sub");
+  else if(mode==="super") insertAtCursor(el,"sup");
+  else insertAtCursor(el);
+}
+
+function inputNumber(n){ inputElement(n); }
+function inputSymbol(s){ insertAtCursor(s); }
+
+function deleteChar(){
+  const sel=window.getSelection();
+  if(!sel.rangeCount) return;
+  const r=sel.getRangeAt(0);
+
+  if(r.startContainer.nodeType===3 && r.startOffset>0){
+    r.startContainer.deleteData(r.startOffset-1,1);
+    r.setStart(r.startContainer,r.startOffset-1);
+  } else if(r.startContainer.previousSibling){
+    r.startContainer.previousSibling.remove();
+  }
+  r.collapse(true);
+  sel.removeAllRanges(); sel.addRange(r);
+  display.focus();
+}
+
+function clearDisplay(){
+  display.innerHTML="";
+  display.focus();
+}
+
+/* ================= CURSOR MOVEMENT ================= */
+function moveCursor(dir){
+  const sel=window.getSelection();
+  if(!sel.rangeCount) return;
+  if(dir==="left") sel.modify("move","backward","character");
+  if(dir==="right") sel.modify("move","forward","character");
+  if(dir==="up") sel.modify("move","backward","line");
+  if(dir==="down") sel.modify("move","forward","line");
+  display.focus();
+}
+/* ================= CHEM INSERT HELPERS ================= */
+
+function insertFormula(formula){
+  for(let i=0;i<formula.length;i++){
+    const ch=formula[i];
+    if(/\d/.test(ch)) insertAtCursor(ch,"sub");
+    else insertAtCursor(ch);
+  }
+}
+
+function insertIon(ion){
+  const m=ion.match(/^(.+?)(\d*)([+-])$/);
+  if(!m){ insertFormula(ion); return; }
+  insertFormula(m[1]);
+  if(m[2]) insertAtCursor(m[2],"sup");
+  insertAtCursor(m[3],"sup");
+}
+
+/* ================= PERIODIC TABLE ================= */
+
+const periods={
+ P1:['H','He'],
+ P2:['Li','Be','B','C','N','O','F','Ne'],
+ P3:['Na','Mg','Al','Si','P','S','Cl','Ar'],
+ P4:['K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr'],
+ P5:['Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe'],
+ P6:['Cs','Ba','La','Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn'],
+ P7:['Fr','Ra','Ac','Rf','Db','Sg','Bh','Hs','Mt','Ds','Rg','Cn','Fl','Lv']
+};
+
+const ions={
+ G1:['H+','Li+','Na+','K+','Rb+','Cs+','Fr+'],
+ G2:['Be2+','Mg2+','Ca2+','Sr2+','Ba2+','Ra2+'],
+ G3:['Al3+'],
+ G4:['C4+'],
+ G5:['N3-'],
+ G6:['O2-','S2-'],
+ G7:['F-','Cl-','Br-','I-'],
+ G8:['He','Ne','Ar','Kr','Xe','Rn']
+};
+
+const pb=document.getElementById("period-buttons");
+const pe=document.getElementById("period-element-buttons");
+
+Object.keys(periods).forEach(p=>{
+  const b=document.createElement("button");
+  b.textContent=p;
+  b.onclick=()=>{
+    pe.innerHTML="";
+    periods[p].forEach(el=>{
+      const e=document.createElement("button");
+      e.textContent=el;
+      e.onclick=()=>insertFormula(el);
+      pe.appendChild(e);
+    });
+  };
+  pb.appendChild(b);
+});
+
+const gb=document.getElementById("group-buttons");
+const gi=document.getElementById("group-ion-buttons");
+
+Object.keys(ions).forEach(g=>{
+  const b=document.createElement("button");
+  b.textContent=g;
+  b.onclick=()=>{
+    gi.innerHTML="";
+    ions[g].forEach(i=>{
+      const ib=document.createElement("button");
+      ib.textContent=i;
+      ib.onclick=()=>insertIon(i);
+      gi.appendChild(ib);
+    });
+  };
+  gb.appendChild(b);
+});
+
+/* ================= BALANCER  ENGINE ================= */
+/* ---------------- FULL ELEMENTS WITH VALENCE ELECTRONS ---------------- */
+const ELEMENTS = [
+{Z:1,s:"H",n:"Hydrogen",m:1.008, ve:1, ec:"1s1"},
+{Z:2,s:"He",n:"Helium",m:4.0026, ve:2, ec:"1s2"},
+{Z:3,s:"Li",n:"Lithium",m:6.94, ve:1, ec:"[He]2s1"},
+{Z:4,s:"Be",n:"Beryllium",m:9.0122, ve:2, ec:"[He]2s2"},
+{Z:5,s:"B",n:"Boron",m:10.81, ve:3, ec:"[He]2s2 2p1"},
+{Z:6,s:"C",n:"Carbon",m:12.011, ve:4, ec:"[He]2s2 2p2"},
+{Z:7,s:"N",n:"Nitrogen",m:14.007, ve:5, ec:"[He]2s2 2p3"},
+{Z:8,s:"O",n:"Oxygen",m:15.999, ve:6, ec:"[He]2s2 2p4"},
+{Z:9,s:"F",n:"Fluorine",m:18.998, ve:7, ec:"[He]2s2 2p5"},
+{Z:10,s:"Ne",n:"Neon",m:20.180, ve:8, ec:"[He]2s2 2p6"},
+{Z:11,s:"Na",n:"Sodium",m:22.990, ve:1, ec:"[Ne]3s1"},
+{Z:12,s:"Mg",n:"Magnesium",m:24.305, ve:2, ec:"[Ne]3s2"},
+{Z:13,s:"Al",n:"Aluminium",m:26.982, ve:3, ec:"[Ne]3s2 3p1"},
+{Z:14,s:"Si",n:"Silicon",m:28.085, ve:4, ec:"[Ne]3s2 3p2"},
+{Z:15,s:"P",n:"Phosphorus",m:30.974, ve:5, ec:"[Ne]3s2 3p3"},
+{Z:16,s:"S",n:"Sulfur",m:32.06, ve:6, ec:"[Ne]3s2 3p4"},
+{Z:17,s:"Cl",n:"Chlorine",m:35.45, ve:7, ec:"[Ne]3s2 3p5"},
+{Z:18,s:"Ar",n:"Argon",m:39.948, ve:8, ec:"[Ne]3s2 3p6"},
+{Z:19,s:"K",n:"Potassium",m:39.098, ve:1, ec:"[Ar]4s1"},
+{Z:20,s:"Ca",n:"Calcium",m:40.078, ve:2, ec:"[Ar]4s2"},
+{Z:21,s:"Sc",n:"Scandium",m:44.956, ve:3, ec:"[Ar]3d1 4s2"},
+{Z:22,s:"Ti",n:"Titanium",m:47.867, ve:4, ec:"[Ar]3d2 4s2"},
+{Z:23,s:"V",n:"Vanadium",m:50.942, ve:5, ec:"[Ar]3d3 4s2"},
+{Z:24,s:"Cr",n:"Chromium",m:51.996, ve:6, ec:"[Ar]3d5 4s1"},
+{Z:25,s:"Mn",n:"Manganese",m:54.938, ve:7, ec:"[Ar]3d5 4s2"},
+{Z:26,s:"Fe",n:"Iron",m:55.845, ve:8, ec:"[Ar]3d6 4s2"},
+{Z:27,s:"Co",n:"Cobalt",m:58.933, ve:9, ec:"[Ar]3d7 4s2"},
+{Z:28,s:"Ni",n:"Nickel",m:58.693, ve:10, ec:"[Ar]3d8 4s2"},
+{Z:29,s:"Cu",n:"Copper",m:63.546, ve:11, ec:"[Ar]3d10 4s1"},
+{Z:30,s:"Zn",n:"Zinc",m:65.38, ve:12, ec:"[Ar]3d10 4s2"},
+{Z:31,s:"Ga",n:"Gallium",m:69.723, ve:3, ec:"[Ar]3d10 4s2 4p1"},
+{Z:32,s:"Ge",n:"Germanium",m:72.63, ve:4, ec:"[Ar]3d10 4s2 4p2"},
+{Z:33,s:"As",n:"Arsenic",m:74.922, ve:5, ec:"[Ar]3d10 4s2 4p3"},
+{Z:34,s:"Se",n:"Selenium",m:78.971, ve:6, ec:"[Ar]3d10 4s2 4p4"},
+{Z:35,s:"Br",n:"Bromine",m:79.904, ve:7, ec:"[Ar]3d10 4s2 4p5"},
+{Z:36,s:"Kr",n:"Krypton",m:83.798, ve:8, ec:"[Ar]3d10 4s2 4p6"},
+{Z:37,s:"Rb",n:"Rubidium",m:85.468, ve:1, ec:"[Kr]5s1"},
+{Z:38,s:"Sr",n:"Strontium",m:87.62, ve:2, ec:"[Kr]5s2"},
+{Z:39,s:"Y",n:"Yttrium",m:88.906, ve:3, ec:"[Kr]4d1 5s2"},
+{Z:40,s:"Zr",n:"Zirconium",m:91.224, ve:4, ec:"[Kr]4d2 5s2"},
+{Z:41,s:"Nb",n:"Niobium",m:92.906, ve:5, ec:"[Kr]4d4 5s1"},
+{Z:42,s:"Mo",n:"Molybdenum",m:95.95, ve:6, ec:"[Kr]4d5 5s1"},
+{Z:43,s:"Tc",n:"Technetium",m:98, ve:7, ec:"[Kr]4d5 5s2"},
+{Z:44,s:"Ru",n:"Ruthenium",m:101.07, ve:8, ec:"[Kr]4d7 5s1"},
+{Z:45,s:"Rh",n:"Rhodium",m:102.91, ve:9, ec:"[Kr]4d8 5s1"},
+{Z:46,s:"Pd",n:"Palladium",m:106.42, ve:10, ec:"[Kr]4d10"},
+{Z:47,s:"Ag",n:"Silver",m:107.87, ve:11, ec:"[Kr]4d10 5s1"},
+{Z:48,s:"Cd",n:"Cadmium",m:112.41, ve:12, ec:"[Kr]4d10 5s2"},
+{Z:49,s:"In",n:"Indium",m:114.82, ve:3, ec:"[Kr]4d10 5s2 5p1"},
+{Z:50,s:"Sn",n:"Tin",m:118.71, ve:4, ec:"[Kr]4d10 5s2 5p2"},
+{Z:51,s:"Sb",n:"Antimony",m:121.76, ve:5, ec:"[Kr]4d10 5s2 5p3"},
+{Z:52,s:"Te",n:"Tellurium",m:127.60, ve:6, ec:"[Kr]4d10 5s2 5p4"},
+{Z:53,s:"I",n:"Iodine",m:126.90, ve:7, ec:"[Kr]4d10 5s2 5p5"},
+{Z:54,s:"Xe",n:"Xenon",m:131.29, ve:8, ec:"[Kr]4d10 5s2 5p6"},
+{Z:55,s:"Cs",n:"Cesium",m:132.91, ve:1, ec:"[Xe]6s1"},
+{Z:56,s:"Ba",n:"Barium",m:137.33, ve:2, ec:"[Xe]6s2"},
+{Z:57,s:"La",n:"Lanthanum",m:138.91, ve:3, ec:"[Xe]5d1 6s2"},
+{Z:58,s:"Ce",n:"Cerium",m:140.12, ve:4, ec:"[Xe]4f1 5d1 6s2"},
+{Z:59,s:"Pr",n:"Praseodymium",m:140.91, ve:5, ec:"[Xe]4f3 6s2"},
+{Z:60,s:"Nd",n:"Neodymium",m:144.24, ve:6, ec:"[Xe]4f4 6s2"},
+{Z:61,s:"Pm",n:"Promethium",m:145, ve:5, ec:"[Xe]4f5 6s2"},
+{Z:62,s:"Sm",n:"Samarium",m:150.36, ve:6, ec:"[Xe]4f6 6s2"},
+{Z:63,s:"Eu",n:"Europium",m:151.96, ve:7, ec:"[Xe]4f7 6s2"},
+{Z:64,s:"Gd",n:"Gadolinium",m:157.25, ve:8, ec:"[Xe]4f7 5d1 6s2"},
+{Z:65,s:"Tb",n:"Terbium",m:158.93, ve:9, ec:"[Xe]4f9 6s2"},
+{Z:66,s:"Dy",n:"Dysprosium",m:162.50, ve:10, ec:"[Xe]4f10 6s2"},
+{Z:67,s:"Ho",n:"Holmium",m:164.93, ve:11, ec:"[Xe]4f11 6s2"},
+{Z:68,s:"Er",n:"Erbium",m:167.26, ve:12, ec:"[Xe]4f12 6s2"},
+{Z:69,s:"Tm",n:"Thulium",m:168.93, ve:13, ec:"[Xe]4f13 6s2"},
+{Z:70,s:"Yb",n:"Ytterbium",m:173.05, ve:14, ec:"[Xe]4f14 6s2"},
+{Z:71,s:"Lu",n:"Lutetium",m:174.97, ve:3, ec:"[Xe]4f14 5d1 6s2"},
+{Z:72,s:"Hf",n:"Hafnium",m:178.49, ve:4, ec:"[Xe]4f14 5d2 6s2"},
+{Z:73,s:"Ta",n:"Tantalum",m:180.95, ve:5, ec:"[Xe]4f14 5d3 6s2"},
+{Z:74,s:"W",n:"Tungsten",m:183.84, ve:6, ec:"[Xe]4f14 5d4 6s2"},
+{Z:75,s:"Re",n:"Rhenium",m:186.21, ve:7, ec:"[Xe]4f14 5d5 6s2"},
+{Z:76,s:"Os",n:"Osmium",m:190.23, ve:8, ec:"[Xe]4f14 5d6 6s2"},
+{Z:77,s:"Ir",n:"Iridium",m:192.22, ve:9, ec:"[Xe]4f14 5d7 6s2"},
+{Z:78,s:"Pt",n:"Platinum",m:195.08, ve:10, ec:"[Xe]4f14 5d9 6s1"},
+{Z:79,s:"Au",n:"Gold",m:196.97, ve:11, ec:"[Xe]4f14 5d10 6s1"},
+{Z:80,s:"Hg",n:"Mercury",m:200.59, ve:12, ec:"[Xe]4f14 5d10 6s2"},
+{Z:81,s:"Tl",n:"Thallium",m:204.38, ve:3, ec:"[Xe]4f14 5d10 6s2 6p1"},
+{Z:82,s:"Pb",n:"Lead",m:207.2, ve:4, ec:"[Xe]4f14 5d10 6s2 6p2"},
+{Z:83,s:"Bi",n:"Bismuth",m:208.98, ve:5, ec:"[Xe]4f14 5d10 6s2 6p3"},
+{Z:84,s:"Po",n:"Polonium",m:209, ve:6, ec:"[Xe]4f14 5d10 6s2 6p4"},
+{Z:85,s:"At",n:"Astatine",m:210, ve:7, ec:"[Xe]4f14 5d10 6s2 6p5"},
+{Z:86,s:"Rn",n:"Radon",m:222, ve:8, ec:"[Xe]4f14 5d10 6s2 6p6"},
+{Z:87,s:"Fr",n:"Francium",m:223, ve:1, ec:"[Rn]7s1"},
+{Z:88,s:"Ra",n:"Radium",m:226, ve:2, ec:"[Rn]7s2"},
+{Z:89,s:"Ac",n:"Actinium",m:227, ve:3, ec:"[Rn]6d1 7s2"},
+{Z:90,s:"Th",n:"Thorium",m:232.04, ve:4, ec:"[Rn]6d2 7s2"},
+{Z:91,s:"Pa",n:"Protactinium",m:231.04, ve:5, ec:"[Rn]5f2 6d1 7s2"},
+{Z:92,s:"U",n:"Uranium",m:238.03, ve:6, ec:"[Rn]5f3 6d1 7s2"},
+{Z:93,s:"Np",n:"Neptunium",m:237, ve:5, ec:"[Rn]5f4 6d1 7s2"},
+{Z:94,s:"Pu",n:"Plutonium",m:244, ve:6, ec:"[Rn]5f6 7s2"},
+{Z:95,s:"Am",n:"Americium",m:243, ve:7, ec:"[Rn]5f7 7s2"},
+{Z:96,s:"Cm",n:"Curium",m:247, ve:8, ec:"[Rn]5f7 6d1 7s2"},
+{Z:97,s:"Bk",n:"Berkelium",m:247, ve:9, ec:"[Rn]5f9 7s2"},
+{Z:98,s:"Cf",n:"Californium",m:251, ve:10, ec:"[Rn]5f10 7s2"},
+{Z:99,s:"Es",n:"Einsteinium",m:252, ve:11, ec:"[Rn]5f11 7s2"},
+{Z:100,s:"Fm",n:"Fermium",m:257, ve:12, ec:"[Rn]5f12 7s2"},
+{Z:101,s:"Md",n:"Mendelevium",m:258, ve:13, ec:"[Rn]5f13 7s2"},
+{Z:102,s:"No",n:"Nobelium",m:259, ve:14, ec:"[Rn]5f14 7s2"},
+{Z:103,s:"Lr",n:"Lawrencium",m:266, ve:3, ec:"[Rn]5f14 6d1 7s2"},
+{Z:104,s:"Rf",n:"Rutherfordium",m:267, ve:4, ec:"[Rn]5f14 6d2 7s2"},
+{Z:105,s:"Db",n:"Dubnium",m:268, ve:5, ec:"[Rn]5f14 6d3 7s2"},
+{Z:106,s:"Sg",n:"Seaborgium",m:271, ve:6, ec:"[Rn]5f14 6d4 7s2"},
+{Z:107,s:"Bh",n:"Bohrium",m:270, ve:7, ec:"[Rn]5f14 6d5 7s2"},
+{Z:108,s:"Hs",n:"Hassium",m:270, ve:8, ec:"[Rn]5f14 6d6 7s2"},
+{Z:109,s:"Mt",n:"Meitnerium",m:278, ve:9, ec:"[Rn]5f14 6d7 7s2"},
+{Z:110,s:"Ds",n:"Darmstadtium",m:281, ve:10, ec:"[Rn]5f14 6d8 7s2"},
+{Z:111,s:"Rg",n:"Roentgenium",m:282, ve:11, ec:"[Rn]5f14 6d10 7s1"},
+{Z:112,s:"Cn",n:"Copernicium",m:285, ve:12, ec:"[Rn]5f14 6d10 7s2"},
+{Z:113,s:"Nh",n:"Nihonium",m:286, ve:3, ec:"[Rn]5f14 6d10 7s2 7p1"},
+{Z:114,s:"Fl",n:"Flerovium",m:289, ve:4, ec:"[Rn]5f14 6d10 7s2 7p2"},
+{Z:115,s:"Mc",n:"Moscovium",m:289, ve:5, ec:"[Rn]5f14 6d10 7s2 7p3"},
+{Z:116,s:"Lv",n:"Livermorium",m:293, ve:6, ec:"[Rn]5f14 6d10 7s2 7p4"},
+{Z:117,s:"Ts",n:"Tennessine",m:294, ve:7, ec:"[Rn]5f14 6d10 7s2 7p5"},
+{Z:118,s:"Og",n:"Oganesson",m:294, ve:8, ec:"[Rn]5f14 6d10 7s2 7p6"}
+];
+
+const Z_MAP = Object.fromEntries(ELEMENTS.map(e => [e.s, e.Z]));
+const MASS_MAP = Object.fromEntries(ELEMENTS.map(e => [e.s, e.m]));
+const PARTICLE_MASS = {
+  "e-": 0.00054858,   // g/mol
+  "p+": 1.007276,
+  "n0": 1.008665,
+  "n":  1.008665     // allow shorthand
+};
+const ORBITAL_ORDER = [
+  ["1s",2],
+  ["2s",2],
+  ["2p",6],
+  ["3s",2],
+  ["3p",6],
+  ["4s",2],
+  ["3d",10],
+  ["4p",6],
+  ["5s",2],
+  ["4d",10],
+  ["5p",6],
+  ["6s",2],
+  ["4f",14],
+  ["5d",10],
+  ["6p",6],
+  ["7s",2],
+  ["5f",14],
+  ["6d",10],
+  ["7p",6]
+];
+const AUFBAU_EXCEPTIONS = {
+  24: { "4s":1, "3d":5 },   // Cr
+  29: { "4s":1, "3d":10 },  // Cu
+  42: { "5s":1, "4d":5 },   // Mo
+  47: { "5s":1, "4d":10 },  // Ag
+  79: { "6s":1, "5d":10 }   // Au
+};
+/* ================= MATH NORMALIZATION ================= */
+
+let ANS = 0;
+
+function normalizeOperators(expr){
+  return expr
+    .replace(/×/g,'*')
+    .replace(/÷/g,'/')
+    .replace(/−/g,'-');
+}
+
+function convertCaretPowers(expr){
+  return expr.replace(
+    /([0-9.)\]])\s*\^\s*([0-9(.-]+)/g,
+    '$1**$2'
+  );
+}
+
+function convertSuperscripts(expr){
+  const map = {
+    '⁰':'0','¹':'1','²':'2','³':'3','⁴':'4',
+    '⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'
+  };
+
+  return expr.replace(
+    /([0-9.)])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g,
+    (_, base, sup) =>
+      `${base}**${sup.split('').map(c=>map[c]).join('')}`
+  );
+}
+
+function convertRoots(expr){
+  expr = expr.replace(/√\(([^)]+)\)/g,'Math.sqrt($1)');
+  expr = expr.replace(/√([0-9.]+)/g,'Math.sqrt($1)');
+  expr = expr.replace(/(\d+)√\(([^)]+)\)/g,'Math.pow($2,1/$1)');
+  return expr;
+}
+
+
+function fullElectronConfiguration(Z){
+  let electrons = Z;
+  const config = {};
+
+  // Fill orbitals
+  for(const [orb, cap] of ORBITAL_ORDER){
+    if(electrons <= 0) break;
+    const fill = Math.min(cap, electrons);
+    config[orb] = fill;
+    electrons -= fill;
+  }
+
+  // Apply exceptions
+  if(AUFBAU_EXCEPTIONS[Z]){
+    Object.entries(AUFBAU_EXCEPTIONS[Z]).forEach(([orb, val])=>{
+      config[orb] = val;
+    });
+  }
+
+  // Format as string
+  return Object.entries(config)
+    .filter(([_,v])=>v>0)
+    .map(([o,v])=>`${o}${v}`)
+    .join(" ");
+}
+
+function showElectronConfig(){
+  const text = display.innerText.trim();
+  const match = text.match(/\b[A-Z][a-z]?\b/);
+
+  if(!match){
+    alert("Insert an element symbol first");
+    return;
+  }
+
+  const el = ELEMENTS.find(e=>e.s===match[0]);
+  if(!el){
+    alert("Unknown element");
+    return;
+  }
+
+  const fullEC = fullElectronConfiguration(el.Z);
+
+  alert(
+`${el.n} (${el.s})
+Atomic number: ${el.Z}
+
+Full electron configuration:
+${fullEC}`
+  );
+}
+const EC_CACHE = {};
+
+function getElectronConfig(symbol){
+  if(EC_CACHE[symbol]) return EC_CACHE[symbol];
+
+  const el = ELEMENTS.find(e => e.s === symbol);
+  if(!el) return null;
+
+  const ec = fullElectronConfiguration(el.Z);
+  EC_CACHE[symbol] = ec;   // cache result
+  return ec;
+}
+
+/* ===================== BALANCER FUNCTION ===================== */
+
+function balanceCurrentEquation(){
+    const input = display.innerText;
+    try {
+        const output = balanceEquation(input);
+        display.innerText = output;
+    } catch(e) {
+        alert("Error balancing equation: " + e);
+    }
+}
+
+/* -------------------- PARSING FORMULAS -------------------- */
+function parseFormula(formula){
+    const stack = [{}];
+    let i = 0;
+
+    while(i < formula.length){
+        if(formula[i] === '('){
+            stack.push({});
+            i++;
+        } else if(formula[i] === ')'){
+            i++;
+            let num = "";
+            while(i < formula.length && /\d/.test(formula[i])) num += formula[i++];
+            const mult = parseInt(num || "1");
+            const top = stack.pop();
+            const base = stack[stack.length - 1];
+            for(const el in top) base[el] = (base[el] || 0) + top[el] * mult;
+        } else if(/[A-Z]/.test(formula[i])){
+            let el = formula[i++];
+            while(i < formula.length && /[a-z]/.test(formula[i])) el += formula[i++];
+            let num = "";
+            while(i < formula.length && /\d/.test(formula[i])) num += formula[i++];
+            const count = parseInt(num || "1");
+            stack[stack.length - 1][el] = (stack[stack.length - 1][el] || 0) + count;
+        } else i++;
+    }
+
+    return stack[0];
+}
+
+function parseSpecies(text){
+    text = text.trim();
+    let charge = 0;
+    const chargeMatch = text.match(/([+-])(\d*)$/);
+    if(chargeMatch){
+        const sign = chargeMatch[1] === "+" ? 1 : -1;
+        const mag = parseInt(chargeMatch[2] || "1");
+        charge = sign * mag;
+        text = text.slice(0, chargeMatch.index);
+    }
+    const atoms = parseFormula(text);
+    return { formula:text, atoms, charge };
+}
+
+function parseEquation(input){
+    input = input.replace(/=/g,"→");
+    const parts = input.split("→");
+    if(parts.length !== 2) throw "Invalid equation";
+    const left = parts[0].split("+").map(s=>parseSpecies(s));
+    const right = parts[1].split("+").map(s=>parseSpecies(s));
+    return { left, right };
+}
+
+/* -------------------- BUILD MATRIX -------------------- */
+function buildAtomChargeMatrix(left, right){
+    const elements = new Set();
+    [...left, ...right].forEach(s => Object.keys(s.atoms).forEach(e => elements.add(e)));
+    const rows = [];
+
+    // Atom conservation rows
+    for(const el of elements){
+        const row = [];
+        left.forEach(s => row.push(s.atoms[el] || 0));
+        right.forEach(s => row.push(-(s.atoms[el] || 0)));
+        rows.push(row);
+    }
+
+    // Charge conservation row
+    const chargeRow = [];
+    left.forEach(s => chargeRow.push(s.charge));
+    right.forEach(s => chargeRow.push(-s.charge));
+    rows.push(chargeRow);
+
+    return rows;
+}
+
+/* -------------------- SOLVE NULLSPACE -------------------- */
+function gcd(a,b){ a=Math.abs(a);b=Math.abs(b);while(b)[a,b]=[b,a%b];return a;}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+function solveNullSpace(mat){
+    const m=mat.length, n=mat[0].length;
+    const A=mat.map(r=>r.map(v=>[v,1])); // fraction [num,den]
+    let row=0;
+    for(let col=0; col<n && row<m; col++){
+        let pivot=row; while(pivot<m && A[pivot][col][0]===0) pivot++;
+        if(pivot===m) continue;
+        [A[row], A[pivot]]=[A[pivot], A[row]];
+        const [pn,pd]=A[row][col];
+        for(let j=col;j<n;j++){ A[row][j][0]*=pd; A[row][j][1]*=pn; }
+        for(let i=0;i<m;i++){
+            if(i===row) continue;
+            const [fn,fd]=A[i][col]; if(fn===0) continue;
+            for(let j=col;j<n;j++){
+                let [aNum,aDen]=A[i][j]; let [bNum,bDen]=A[row][j];
+                A[i][j][0]=aNum*bDen - fn*bNum;
+                A[i][j][1]=aDen*bDen;
+                const g=gcd(Math.abs(A[i][j][0]), A[i][j][1]);
+                if(g!==0){ A[i][j][0]/=g; A[i][j][1]/=g; }
+            }
+        }
+        row++;
+    }
+
+    // Back-substitute
+    const x=Array.from({length:n},()=>[0,1]);
+    x[n-1]=[1,1];
+    for(let i=m-1;i>=0;i--){
+        let lead=A[i].findIndex(v=>v[0]!==0);
+        if(lead===-1||lead===n-1) continue;
+        let num=0, den=1;
+        for(let j=lead+1;j<n;j++){
+            const [aNum,aDen]=A[i][j], [xNum,xDen]=x[j];
+            num=num*(aDen*xDen)+aNum*xNum*den;
+            den*=aDen*xDen;
+            const g=gcd(Math.abs(num),den); if(g!==0){num/=g;den/=g;}
+        }
+        x[lead]=[-num,den];
+    }
+
+    let L=1;
+    x.forEach(v=>L=lcm(L,v[1]));
+    let result=x.map(v=>(v[0]*L)/v[1]);
+    const sign=result.find(v=>v!==0)<0?-1:1;
+    result=result.map(v=>v*sign);
+    const g=result.reduce((a,b)=>gcd(a,b));
+    result=result.map(v=>v/g);
+    return result;
+}
+
+/* -------------------- MAIN BALANCER -------------------- */
+function balanceEquation(input){
+    const {left,right}=parseEquation(input);
+    const matrix=buildAtomChargeMatrix(left,right);
+    const coeffs=solveNullSpace(matrix);
+    const f=(s,i)=> (coeffs[i]!==1 ? coeffs[i] : "")+s.formula;
+    const L=left.map((s,i)=>f(s,i)).join(" + ");
+    const R=right.map((s,i)=>f(s,i+left.length)).join(" + ");
+    return L+" → "+R;
+}
+function molarMassOfFormula(formula){
+  const atoms = parseFormula(formula);
+  let mass = 0;
+  for(const el in atoms){
+    if(!(el in MASS_MAP)) throw `Unknown element: ${el}`;
+    mass += MASS_MAP[el] * atoms[el];
+  }
+  return mass;
+}
+function expandChemicalMasses(expr){
+  return expr.replace(
+    /(\d+)?([A-Z][a-z]?[A-Za-z0-9()]*)/g,
+    (match, coeff, formula) => {
+      // ignore pure element symbols used as math variables (rare)
+      if(!/[A-Za-z]/.test(formula)) return match;
+
+      const mass = molarMassOfFormula(formula);
+      return coeff ? `${coeff}*(${mass})` : `(${mass})`;
+    }
+  );
+}
+/* ================= NUMERIC EVALUATION ================= */
+
+function evaluateNumeric(expr){
+  expr = expr.replace(/\bAns\b/g, ANS);
+  const result = Function(`"use strict"; return (${expr})`)();
+  ANS = result;
+  return result;
+}
+function insertAns(){
+  inputSymbol("Ans");
+}
+
+function insertNthRoot(){
+  inputSymbol("√(");
+  moveCursor("left");
+}
+function containsChemistry(expr){
+  return /\b([A-Z][a-z]?)(\d+|\()/g.test(expr);
+}
+/* ================= IONIC CHARGE ENGINE ================= */
+
+function parseCharge(species){
+  species = species.replace(/\s+/g,'');
+
+  if(/e/.test(species)){
+    const n = species.match(/\d+/);
+    return -(n ? parseInt(n[0]) : 1);
+  }
+
+  const chargeMatch = species.match(/(\^?)(\d*)([+-])/);
+  if(chargeMatch){
+    const mag = chargeMatch[2] ? parseInt(chargeMatch[2]) : 1;
+    return chargeMatch[3] === '+' ? mag : -mag;
+  }
+
+  return 0;
+}
+
+function computeIonicCharge(expr){
+  expr = expr
+    .replace(/×/g,'*')
+    .replace(/÷/g,'/')
+    .replace(/·/g,'+');
+
+  expr = expr.replace(
+    /(\d*)\s*([A-Za-z\[\]\(\)0-9]+(?:\^?\d*[+-])?)/g,
+    (_, coeff, species)=>{
+      const c = parseCharge(species);
+      return (coeff ? coeff : 1) * c;
+    }
+  );
+
+  return Function(`return ${expr}`)();
+}
+
+function computeChargeButton(){
+  try{
+    const expr = display.innerText;
+    const result = computeIonicCharge(expr);
+    display.innerText = `Net charge = ${result}`;
+  }catch{
+    alert("Invalid ionic charge expression");
+  }
+}
+function solveUnknown() {
+  try {
+    let expr = display.innerText.trim();
+    // Simple placeholder: user must type an equation like "V = I*R"
+    if(!expr.includes('=')) { 
+      alert("Enter equation like: V = I*R"); 
+      return; 
+    }
+
+    let [left, right] = expr.split('=').map(s => s.trim());
+    // Try to isolate unknown on left
+    // For simplicity, using numeric evaluation if right has no unknown
+    let unknownMatch = left.match(/[a-zA-Z]+/);
+    if(!unknownMatch) unknownMatch = right.match(/[a-zA-Z]+/);
+
+    if(!unknownMatch) {
+      alert("No unknown variable found!");
+      return;
+    }
+
+    let unknown = unknownMatch[0];
+
+    // Replace unknown with a placeholder value to evaluate
+    let testExpr = expr.replace(new RegExp(unknown, 'g'), '1'); // temp value
+    // You can later implement algebra solver for real formulas
+
+    alert(`Unknown variable detected: ${unknown}\nRight now, you can manually solve using the formula.`);
+  } catch(e) {
+    alert("Error solving unknown: " + e);
+  }
+}
+
+function evaluateMolarExpression(){
+  try{
+    let expr = display.innerText.trim();
+
+    expr = normalizeOperators(expr);
+    expr = convertCaretPowers(expr);
+    expr = convertSuperscripts(expr);
+    expr = convertRoots(expr);
+
+    if(containsChemistry(expr)){
+      expr = expandChemicalMasses(expr);
+      expr = expandPrefixes(expr);
+    }
+
+    const result = evaluateNumeric(expr);
+    display.innerText = result;
+  }catch(e){
+    alert("Invalid expression");
+  }
+}
+
+function showElectronConfig(){
+  const text = display.innerText.trim();
+  const match = text.match(/\b[A-Z][a-z]?\b/);
+
+  if(!match){
+    alert("Insert an element symbol first");
+    return;
+  }
+
+  const el = ELEMENTS.find(e=>e.s===match[0]);
+  if(!el){
+    alert("Unknown element");
+    return;
+  }
+
+  const fullEC = fullElectronConfiguration(el.Z);
+
+  alert(
+`${el.n} (${el.s})
+Atomic number: ${el.Z}
+
+Full electron configuration:
+${fullEC}`
+  );
+}
+
+
+const SI_PREFIXES = [
+  { name:"Quetta", symbol:"Q", value:1e30 },
+  { name:"Ronna",  symbol:"R", value:1e27 },
+  { name:"Yotta",  symbol:"Y", value:1e24 },
+  { name:"Zetta",  symbol:"Z", value:1e21 },
+  { name:"Exa",    symbol:"E", value:1e18 },
+  { name:"Peta",   symbol:"P", value:1e15 },
+  { name:"Tera",   symbol:"T", value:1e12 },
+  { name:"Giga",   symbol:"G", value:1e9  },
+  { name:"Mega",   symbol:"M", value:1e6  },
+  { name:"Kilo",   symbol:"k", value:1e3  },
+  { name:"Hecto",  symbol:"h", value:1e2  },
+  { name:"Deca",   symbol:"da",value:1e1  },
+
+  { name:"Deci",   symbol:"d", value:1e-1 },
+  { name:"Centi", symbol:"c", value:1e-2 },
+  { name:"Milli", symbol:"m", value:1e-3 },
+  { name:"Micro", symbol:"μ", value:1e-6 },
+  { name:"Micro ASCII", symbol:"u", value:1e-6 },
+  { name:"Nano",  symbol:"n", value:1e-9 },
+  { name:"Pico",  symbol:"p", value:1e-12},
+  { name:"Femto", symbol:"f", value:1e-15},
+  { name:"Atto",  symbol:"a", value:1e-18},
+  { name:"Zepto", symbol:"z", value:1e-21},
+  { name:"Yocto", symbol:"y", value:1e-24},
+  { name:"Ronto", symbol:"r", value:1e-27},
+  { name:"Quecto",symbol:"q", value:1e-30}
+] ;   
+
+const prefixPad = document.getElementById("prefix-pad");
+
+SI_PREFIXES.forEach(p=>{
+  const btn = document.createElement("button");
+
+  // Show NAME (SYMBOL)
+  btn.innerHTML = `
+    <strong>${p.name}</strong><br>
+    <span style="opacity:.8">(${p.symbol})</span>
+  `;
+
+  btn.style.lineHeight = "1.1em";
+  btn.style.fontSize = "0.8em";
+
+  // Tooltip
+  btn.title = `${p.name} = ×10^${Math.log10(p.value)}`;
+
+  // Insert ONLY the symbol
+  btn.onclick = () => inputSymbol(p.value);
+
+  prefixPad.appendChild(btn);
+});
+/* ================= PREFIX EXPANSION ================= */
+
+function expandPrefixes(expr){
+  SI_PREFIXES.forEach(p=>{
+    const re = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${p.symbol}\\b`, 'g');
+    expr = expr.replace(re, `$1*${p.value}`);
+  });
+  return expr;
+}
+function parseQuantityInput(id){
+  const val = document.getElementById(id).value.trim();
+  if(val === "?" || val === "") return null;
+  return expandPrefixes(val);
+}
+function calculateQuantity(){
+  let V = parseQuantityInput("voltage");
+  let I = parseQuantityInput("current");
+  let P = parseQuantityInput("power");
+  let E = parseQuantityInput("energy");
+  let t = parseQuantityInput("time");
+
+  // Solve iteratively until all knowns calculated
+  let changed = true;
+  while(changed){
+    changed = false;
+
+    if(P==null && V!=null && I!=null){ P = V*I; changed=true; }
+    if(P==null && V!=null && I==null && t!=null && E!=null){ P = E/t; changed=true; }
+
+    if(V==null && P!=null && I!=null){ V = P/I; changed=true; }
+    if(I==null && P!=null && V!=null){ I = P/V; changed=true; }
+
+    if(E==null && P!=null && t!=null){ E = P*t; changed=true; }
+    if(t==null && E!=null && P!=null){ t = E/P; changed=true; }
+    if(E==null && I!=null && V!=null && t!=null){ E = V*I*t; changed=true; }
+  }
+
+  // Update fields with results
+  if(V!=null) document.getElementById("voltage").value = V;
+  if(I!=null) document.getElementById("current").value = I;
+  if(P!=null) document.getElementById("power").value = P;
+  if(E!=null) document.getElementById("energy").value = E;
+  if(t!=null) document.getElementById("time").value = t;
+}
+
+
+
+
+
+</script>
 </body>
 </html>

@@ -1,0 +1,7 @@
+import { molarMass } from "../services/molarMass.service.js";
+
+export const molarMassCalc = (req, res) => {
+  const { formula } = req.body;
+  const result = molarMass(formula);
+  res.json({ result });
+};

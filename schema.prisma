@@ -1,0 +1,17 @@
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  stripeId  String
+  status    String
+  plan      String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(FREE)
+  subscription Subscription?
+  createdAt    DateTime @default(now())
+}
