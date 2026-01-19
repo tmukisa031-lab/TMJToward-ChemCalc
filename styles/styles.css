@@ -1,0 +1,22 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 2rem;
+    max-width: 600px;
+    margin: auto;
+}
+
+input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+pre {
+    background: #f4f4f4;
+    padding: 1rem;
+}
