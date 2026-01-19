@@ -2,7 +2,7 @@
 
 A modular chemistry calculator that allows users to:
 
-- Input chemical reactions in formula or word form
+- Input chemical reactions in formula form
 - Get balanced chemical equations
 - Calculate products from given reactants
 - Perform stoichiometry calculations
